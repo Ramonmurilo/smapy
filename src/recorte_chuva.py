@@ -1,7 +1,5 @@
-#import rioxarray
+import rioxarray
 from shapely.geometry.geo import shape
-#import xarray as xr
-#import geopandas as gpd
 from xarray.core import dataset
 import sys
 
