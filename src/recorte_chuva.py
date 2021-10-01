@@ -1,17 +1,65 @@
-import rioxarray
-import xarray as xr
-import geopandas as gpd
+#import rioxarray
+from shapely.geometry.geo import shape
+#import xarray as xr
+#import geopandas as gpd
+from xarray.core import dataset
+import sys
 
-def preparar_para_recorte(dataset, crs="epsg:4326", xdim="lon", ydim="lat"):
+def preparar_para_recorte_grib(dataset:dataset, crs="epsg:4326", xdim="longitude", ydim="latitude") -> dataset:
+    """Trata coordenadas e dados para recorte | funcional para arquivos grib somente.
+
+    Args:
+        dataset (dataset): Dataset com a variável de interesse selecionada.
+        crs (str, optional): Projeção cartográfica. Defaults to "epsg:4326".
+        xdim (str, optional): Nome da dimensão x. Defaults to "longitude".
+        ydim (str, optional): Nome da dimensão y. Defaults to "latitude".
+
+    Returns:
+        dataset: DataSet pré-cortado
+    """
+    dataset = dataset.assign_coords(longitude=(((dataset.longitude + 180) % 360) - 180)).sortby(xdim)
+    dataset = dataset.rio.set_spatial_dims(x_dim=xdim, y_dim=ydim) 
+    dataset = dataset.rio.write_crs(crs)
+    return dataset
+
+def preparar_para_recorte_nc(dataset:dataset, crs="epsg:4326", xdim="lon", ydim="lat") -> dataset:
+    """Trata coordenadas e dados para recorte | funcional para arquivos netcdf4 somente.
+
+    Args:
+        dataset (dataset): Dataset com a variável de interesse selecionada.
+        crs (str, optional): Projeção cartográfica. Defaults to "epsg:4326".
+        xdim (str, optional): Nome da dimensão x. Defaults to "lon".
+        ydim (str, optional): Nome da dimensão y. Defaults to "lat".
+
+    Returns:
+        dataset: DataSet pré-cortado
+    """
     dataset = dataset.assign_coords(lon=(((dataset.lon + 180) % 360) - 180)).sortby(xdim)
     dataset = dataset.rio.set_spatial_dims(x_dim=xdim, y_dim=ydim) 
     dataset = dataset.rio.write_crs(crs)
     return dataset
 
 
-shp_bacia = gpd.read_file("grande.shp").set_index("Name")
+def main(dados: dataset, contorno:shape, tipo:str='grib') -> dataset:
+    """Recorta dados de chuva com base em um shapefile de bacia.
+    Esta função foi criada para trabalhar com shapefiles disponibilizados por Lis Andrade 
+    em seu repositório do LAMMOC | outros arquivos podem precisar de alterações no código.
 
-# leitura, preparação e recorte dos dados
-dados = xr.open_dataset("precip.mon.mean.nc")
-dados_preparados = preparar_para_recorte(dados.precip)
-dados_recortados = dados_preparados.rio.clip([shp_bacia["geometry"]], "epsg:4326")
+    Args:
+        dados (dataset): Arquivo com a variável já selecionada. Obs.: forneça já na unidade convertida, caso necessário.
+        contorno (shape): Contorno utilizado para recorte
+        tipo (str, optional): aceita 'grib' ou 'nc'. Defaults to 'grib'.
+
+    Returns:
+        dataset: Dados recortados
+    """
+    if tipo == 'grib':
+        dados_preparados = preparar_para_recorte_grib(dados)
+    elif tipo == 'nc':
+        dados_preparados = preparar_para_recorte_nc(dados)
+    else:
+        sys.exit('variável "tipo" incompatível. Selecione {grib ou nc}')
+
+    dados_recortados = dados_preparados.rio.clip([contorno], "epsg:4326")
+    
+    return dados_recortados
