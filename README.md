@@ -19,12 +19,14 @@
 
 ## :scroll: Descrição do projeto
 
-Baixa Dados de chuva observada do MERGE e prevista do CFSv2 e recorta por um shapefile de bacias. 
+Baixa Dados de chuva observada do MERGE e prevista do CFSv2 e recorta por um shapefile de bacias.   
+Gera txt de entrada formatado para o SMAPY.
 
 ## :sparkles: Funcionalidades
 
 :wrench: Download automatizado dos dados de rodada MERGE e CFSv2 mensal.  
-:wrench: Recorta Chuva pelo contorno da bacia e calcula o valor médio.   
+:wrench: Recorta Chuva pelo contorno da bacia e calcula o valor médio.    
+:wrench: Recorta Chuva pelo contorno da bacia, calcula o valor médio e gera txt padronizado.    
 
 ## :warning: Pré-requisitos
 
@@ -54,12 +56,12 @@ jupyter lab
 
 ## :construction: Desenvolvimento
 
-:dart: Gerar txt de saída: Gerar os arquivos no padrão de input para o modelo smapy
+:dart: Check : Validar metodologia e operacionalizar.
 
 ## :rotating_light: Como rodar
 #### O exemplo de como rodar se encontra no arquivo (main.ipynb)
 
 ## :green_apple: I/O
 
-Os Inputs/entradas do SMAPY ficam armazenados na pasta ```downloads``` que é criada automaticamente pelo script.
-Os outputs/saídas do SMAPY ainda não são gerados.
+Os Inputs/entradas do SMAPY ficam armazenados na pasta ```downloads``` que é criada automaticamente pelo script.  
+Os outputs/saídas do SMAPY são gerados na pasta ```output```. 
