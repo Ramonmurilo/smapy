@@ -23,7 +23,7 @@ def busca_ultimo_dado_disponivel(data_requerida:pendulum.date, url_base:str) -> 
             
             data_formatada = data.format("YYYYMMDD")
             lead1_para_teste = data.add(months=1).format("YYYYMM")
-            arquivo = f'cfs.{data_formatada}/{horario_de_rodada}/monthly_grib_01/pgbf.01.{data_formatada}{horario_de_rodada}.{lead1_para_teste}.avrg.grib.grb2'
+            arquivo = f'cfs.{data_formatada}/{horario_de_rodada}/monthly_grib_01/flxf.01.{data_formatada}{horario_de_rodada}.{lead1_para_teste}.avrg.grib.grb2'
             
             url = f'{url_base}/{arquivo}'
             resp=requests.get(url)
@@ -125,7 +125,7 @@ def baixa_mensal_com_membros(data_string:str=None,hoje:bool=False,output:str=os.
         
             if resp.status_code == 200:
                 resp=requests.get(url).content
-                nome_arquivo = f'pgbf.01.{data_formatada}{hora_da_rodada}.{lead}.avrg.grib.grb2'
+                nome_arquivo = f'flxf.01.{data_formatada}{hora_da_rodada}.{lead}.avrg.grib.grb2'
                 armazenador_nomes_lead_e_membros[f'lead_{previsao}'].append(nome_arquivo) #armazena nome do arquivo
                 diretorio = Path(output, nome_arquivo)
 
@@ -134,10 +134,16 @@ def baixa_mensal_com_membros(data_string:str=None,hoje:bool=False,output:str=os.
                     print(f"{arquivo} [ok]")
 
             else :
-                sys.exit('Erro 404. Após verificado a disponibilidade do arquivo, ainda houve erro no download!\n'
-                'Cheque se todos os leads já se encontram disponíveis na página requisitada:'
+                print(f'~~~~ {arquivo}')
+                print('>>> Erro 404. Após verificado a disponibilidade do arquivo, ainda houve erro no download!\n'
+                '>>> Cheque se todos os leads já se encontram disponíveis na página requisitada:\n'
                 f'{url}'
-                '>>>> Caso os dados não estejam disponíveis ainda, recomendamos que usei a data_string referente a ontem.')
+                '\n>>>> Caso os dados não estejam disponíveis ainda, recomendamos que use a data_string referente a ontem.'
+                )
+                print('\n>>>> Por padrão, o download será reiniciado a partir da data de ontem')
+                armazenador2_nomes_lead_e_membros = baixa_mensal_com_membros(data_string=pendulum.yesterday('America/Sao_Paulo').format('DD-MM-YYYY'), output=output)
+                return armazenador2_nomes_lead_e_membros
+
         membros += 1
     
     return armazenador_nomes_lead_e_membros
